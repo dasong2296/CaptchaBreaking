@@ -256,8 +256,6 @@ for batch in validation_dataset.take(1):
     for label in batch_labels:
         label = tf.strings.reduce_join(num_to_char(label)).numpy().decode("utf-8")
         orig_texts.append(label)
-
-    _, ax = plt.subplots(4, 4, figsize=(15, 5))
     for i in range(len(pred_texts)):
         # img = (batch_images[i, :, :, 0] * 255).numpy().astype(np.uint8)
         # img = img.T
