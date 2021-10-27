@@ -16,7 +16,7 @@ data = pd.read_csv("./CAPTCHAS_DATASET/captcha_label.csv")
 # Get list of all the images
 images = sorted(list(map(str, list(data_dir.glob("*.png")))))
 labels = pd.DataFrame(data, columns=['Ground_Truth'])['Ground_Truth'].values.tolist()
-characters = "0123456789ABCDEFGHJKLMNOPRSTUVWXZabcdefghijklmnopqrstuvwxyz"
+characters = set(char for label in labels for char in label)
 print("Number of images found: ", len(images))
 print("Number of labels found: ", len(labels))
 print("Number of unique characters: ", len(characters))
