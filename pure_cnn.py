@@ -257,10 +257,4 @@ for batch in validation_dataset.take(1):
         label = tf.strings.reduce_join(num_to_char(label)).numpy().decode("utf-8")
         orig_texts.append(label)
     for i in range(len(pred_texts)):
-        # img = (batch_images[i, :, :, 0] * 255).numpy().astype(np.uint8)
-        # img = img.T
-        # title = f"Prediction: {pred_texts[i]}"
-        # ax[i // 4, i % 4].imshow(img, cmap="gray")
-        # ax[i // 4, i % 4].set_title(title)
-        # ax[i // 4, i % 4].axis("off")
-        print(pred_texts[i], batch_labels[i])
+        print(orig_texts[i], pred_texts[i])
