@@ -1,4 +1,3 @@
-import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -16,7 +15,7 @@ data = pd.read_csv("./CAPTCHAS_DATASET/captcha_label.csv")
 
 # Get list of all the images
 images = sorted(list(map(str, list(data_dir.glob("*.png")))))
-labels = pd.DataFrame(data, columns=['Ground_Truth'])
+labels = pd.DataFrame(data, columns=['Ground_Truth'])['Ground_Truth'].values.tolist()
 characters = "0123456789ABCDEFGHJKLMNOPRSTUVWXZabcdefghijklmnopqrstuvwxyz"
 print("Number of images found: ", len(images))
 print("Number of labels found: ", len(labels))
@@ -125,12 +124,12 @@ class CTCLayer(layers.Layer):
     def call(self, y_true, y_pred):
         # Compute the training-time loss value and add it
         # to the layer using `self.add_loss()`.
-        batch_len = tf.cast(tf.shape(y_true)[0], dtype="int64")
-        input_length = tf.cast(tf.shape(y_pred)[1], dtype="int64")
-        label_length = tf.cast(tf.shape(y_true)[1], dtype="int64")
+        batch_len = tf.cast(tf.shape(y_true)[0], dtype="int32")
+        input_length = tf.cast(tf.shape(y_pred)[1], dtype="int32")
+        label_length = tf.cast(tf.shape(y_true)[1], dtype="int32")
 
-        input_length = input_length * tf.ones(shape=(batch_len, 1), dtype="int64")
-        label_length = label_length * tf.ones(shape=(batch_len, 1), dtype="int64")
+        input_length = input_length * tf.ones(shape=(batch_len, 1), dtype="int32")
+        label_length = label_length * tf.ones(shape=(batch_len, 1), dtype="int32")
 
         loss = self.loss_fn(y_true, y_pred, input_length, label_length)
         self.add_loss(loss)
