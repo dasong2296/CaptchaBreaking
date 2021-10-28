@@ -23,9 +23,9 @@ start = timeit.default_timer()
 # characters = "0123456789ABCDEFGHJKLMNOPRSTUVWXZabcdefghijklmnopqrstuvwxyz"
 
 # 1024 Test data
-data_dir = Path("./CAPTCHAS_DATASET/")
-images = sorted(list(map(str, list(data_dir.glob("*.jpg")))))
-labels = [img.split(os.path.sep)[-1].split(".jpg")[0] for img in images]
+data_dir = Path("./DNN_DEMO_DATASET/")
+images = sorted(list(map(str, list(data_dir.glob("*.png")))))
+labels = [img.split(os.path.sep)[-1].split(".png")[0] for img in images]
 characters = set(char for label in labels for char in label)
 
 print("Number of images found: ", len(images))
