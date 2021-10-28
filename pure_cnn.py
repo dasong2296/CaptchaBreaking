@@ -50,7 +50,7 @@ num_to_char = layers.StringLookup(
     vocabulary=char_to_num.get_vocabulary(), mask_token=None, invert=True
 )
 
-def split_data(images, labels, train_size=0.9, shuffle=True):
+def split_data(images, labels, train_size=0.9, shuffle=False):
     # 1. Get the total size of the dataset
     size = len(images)
     # 2. Make an indices array and shuffle it, if required
@@ -208,7 +208,7 @@ model.summary()
 
 # Training
 epochs = 100
-early_stopping_patience = 10
+early_stopping_patience = 20
 # Add early stopping
 early_stopping = keras.callbacks.EarlyStopping(
     monitor="val_loss", patience=early_stopping_patience, restore_best_weights=True
@@ -245,16 +245,25 @@ def decode_batch_predictions(pred):
 
 
 #  Let's check results on some validation samples
-for batch in validation_dataset.take(1):
-    batch_images = batch["image"]
-    batch_labels = batch["label"]
+with open('result.txt', 'w') as f:
+    for batch in validation_dataset.take(1):
+        batch_images = batch["image"]
+        batch_labels = batch["label"]
 
-    preds = prediction_model.predict(batch_images)
-    pred_texts = decode_batch_predictions(preds)
+        preds = prediction_model.predict(batch_images)
+        pred_texts = decode_batch_predictions(preds)
 
-    orig_texts = []
-    for label in batch_labels:
-        label = tf.strings.reduce_join(num_to_char(label)).numpy().decode("utf-8")
-        orig_texts.append(label)
-    for i in range(len(pred_texts)):
-        print(orig_texts[i], pred_texts[i])
+        for i in pred_texts:
+            f.write("pred: %s\n" % i)
+
+        orig_texts = []
+        for label in batch_labels:
+            label = tf.strings.reduce_join(num_to_char(label)).numpy().decode("utf-8")
+            orig_texts.append(label)
+        for i in range(len(pred_texts)):
+            print(orig_texts[i], pred_texts[i])
+            f.write("%s\n" % (str(orig_texts[i]) + str(pred_texts[i])))
+
+
+
+    
