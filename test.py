@@ -11,27 +11,6 @@ from tensorflow import keras
 from tensorflow.keras import layers
 
 
-"""
-## Load the data: [Captcha Images](https://www.kaggle.com/fournierp/captcha-version-2-images)
-Let's download the data.
-"""
-
-
-"""shell
-curl -LO https://github.com/AakashKumarNain/CaptchaCracker/raw/master/captcha_images_v2.zip
-unzip -qq captcha_images_v2.zip
-"""
-
-
-"""
-The dataset contains 1040 captcha files as `png` images. The label for each sample is a string,
-the name of the file (minus the file extension).
-We will map each character in the string to an integer for training the model. Similary,
-we will need to map the predictions of the model back to strings. For this purpose
-we will maintain two dictionaries, mapping characters to integers, and integers to characters,
-respectively.
-"""
-
 
 # Path to the data directory
 data_dir = Path("./captcha_images_v2/")
@@ -40,11 +19,6 @@ data_dir = Path("./captcha_images_v2/")
 images = sorted(list(map(str, list(data_dir.glob("*.png")))))
 labels = [img.split(os.path.sep)[-1].split(".png")[0] for img in images]
 characters = set(char for label in labels for char in label)
-data = pd.read_csv("./CAPTCHAS_DATASET/captcha_label.csv")
-real_labels = pd.DataFrame(data, columns=['Ground_Truth'])['Ground_Truth'].values.tolist()
-
-print(labels)
-print(real_labels)
 
 print("Number of images found: ", len(images))
 print("Number of labels found: ", len(labels))
@@ -83,7 +57,7 @@ num_to_char = layers.StringLookup(
 )
 
 
-def split_data(images, labels, train_size=0.9, shuffle=False):
+def split_data(images, labels, train_size=0.9, shuffle=True):
     # 1. Get the total size of the dataset
     size = len(images)
     # 2. Make an indices array and shuffle it, if required
@@ -293,6 +267,7 @@ def decode_batch_predictions(pred):
         res = tf.strings.reduce_join(num_to_char(res)).numpy().decode("utf-8")
         output_text.append(res)
     return output_text
+
 
 
 #  Let's check results on some validation samples
