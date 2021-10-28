@@ -1,3 +1,5 @@
+import os
+import cv2 as cv
 from pytesseract import image_to_string
 from PIL import Image
 from PIL import ImageFilter
@@ -11,14 +13,21 @@ from pathlib import Path
 # Start Timer
 start = timeit.default_timer()
 
+# Jiaming's Data
 # Path to the data directory
-data_dir = Path("./CAPTCHAS_DATASET/")
-data = pd.read_csv("./CAPTCHAS_DATASET/captcha_label.csv")
+# data_dir = Path("./CAPTCHAS_DATASET/")
+# data = pd.read_csv("./CAPTCHAS_DATASET/captcha_label.csv")
+# # Get list of all the images
+# images = sorted(list(map(str, list(data_dir.glob("*.png")))))
+# labels = pd.DataFrame(data, columns=['Ground_Truth'])
+# characters = "0123456789ABCDEFGHJKLMNOPRSTUVWXZabcdefghijklmnopqrstuvwxyz"
 
-# Get list of all the images
+# 1024 Test data
+data_dir = Path("./OCR_DEMO_DATASET/")
 images = sorted(list(map(str, list(data_dir.glob("*.png")))))
-labels = pd.DataFrame(data, columns=['Ground_Truth'])
-characters = "0123456789ABCDEFGHJKLMNOPRSTUVWXZabcdefghijklmnopqrstuvwxyz"
+labels = [img.split(os.path.sep)[-1].split(".png")[0] for img in images]
+characters = set(char for label in labels for char in label)
+
 print("Number of images found: ", len(images))
 print("Number of labels found: ", len(labels))
 print("Number of unique characters: ", len(characters))
@@ -73,30 +82,59 @@ def char_op(trg):
     trg = ImageOps.expand(trg, 30, 'white')
     return trg
 
-for i in images:
-    im = Image.open(i).convert("LA")
-    im = im.resize((5 * im.width, 5 * im.height), Image.ANTIALIAS)
-    im = im.filter(ImageFilter.MedianFilter(3))
-    im = im.filter(ImageFilter.GaussianBlur(3))
-    im = im.filter(ImageFilter.MedianFilter(5))
-    im = im.filter(ImageFilter.SMOOTH_MORE)
-    cnt = ImageEnhance.Contrast(im)
-    im = cnt.enhance(1)
-    a = im.crop((0, 0, 148, 150))
-    b = im.crop((148, 0, 296, 150))
-    c = im.crop((296, 0, 444, 150))
-    d = im.crop((444, 0, 592, 150))
-    e = im.crop((592, 0, 740, 150))
-
-    a = char_op(a)
-    b = char_op(b)
-    c = char_op(c)
-    d = char_op(d)
-    e = char_op(e)
+# Open cv solution
+def recognize_text(image):
+    #  edge preserving filter denoising 
+    blur = cv.pyrMeanShiftFiltering(image, sp=8, sr=60)
+    cv.imshow('dst', blur)
+    #  grayscale image 
+    gray = cv.cvtColor(blur, cv.COLOR_BGR2GRAY)
+    #  binarization setting threshold    if the adaptive threshold is yellow. 4 it won't be able to extract it. 
+    ret, binary = cv.threshold(gray, 185, 255, cv.THRESH_BINARY_INV)
+    print(f' threshold set by binarization ：{ret}')
+    cv.imshow('binary', binary)
+    #  logical operation makes the background white    the font is black for easy recognition. 
+    cv.bitwise_not(binary, binary)
+    cv.imshow('bg_image', binary)
+    #  identify 
+    test_message = Image.fromarray(binary)
+    text = image_to_string(test_message)
+    print(f' recognition result ：{text}')
+    return text
     
-    pred = "".join(ocr(a).rstrip() + ocr(b).rstrip() + ocr(c).rstrip() +
-        ocr(d).rstrip() + ocr(e).rstrip())
-    print(pred)
+with open('result_pure_ocr.txt', 'w') as f:
+    count = 0
+    for i in images:
+        # Pillow solution
+        im = Image.open(i).convert("LA")
+        im = im.resize((5 * im.width, 5 * im.height), Image.ANTIALIAS)
+        im = im.filter(ImageFilter.MedianFilter(3))
+        im = im.filter(ImageFilter.GaussianBlur(3))
+        im = im.filter(ImageFilter.MedianFilter(5))
+        im = im.filter(ImageFilter.SMOOTH_MORE)
+        cnt = ImageEnhance.Contrast(im)
+        im = cnt.enhance(1)
+
+        width, height = im.size
+        sub_width = width / 9
+        a = im.crop((0, 0, 3*sub_width, height))
+        b = im.crop((3*sub_width, 0, 4*sub_width, height))
+        c = im.crop((4*sub_width, 0, 5*sub_width, height))
+        d = im.crop((5*sub_width, 0, 6*sub_width, height))
+        e = im.crop((6*sub_width, 0, width, height))
+
+        a = char_op(a)
+        b = char_op(b)
+        c = char_op(c)
+        d = char_op(d)
+        e = char_op(e)
+        
+        pred = "".join(ocr(a).rstrip() + ocr(b).rstrip() + ocr(c).rstrip() +
+            ocr(d).rstrip() + ocr(e).rstrip())
+
+        print(pred, (i.split('/')[-1]).split('.')[0])
+        f.write("pred: %s, true: %s\n" % (pred, (i.split('/')[-1]).split('.')[0]))
+    
 
 stop = timeit.default_timer()
 print('Time: ', stop - start)  
