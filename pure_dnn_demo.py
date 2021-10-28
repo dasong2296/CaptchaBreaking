@@ -271,7 +271,7 @@ def decode_batch_predictions(pred):
 
 
 #  Let's check results on some validation samples
-with open('result_test.txt', 'w') as f:
+with open('result_pure_dnn_demo.txt', 'w') as f:
     for batch in validation_dataset.take(1):
         batch_images = batch["image"]
         batch_labels = batch["label"]

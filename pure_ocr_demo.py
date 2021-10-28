@@ -82,7 +82,7 @@ def char_op(trg):
     trg = ImageOps.expand(trg, 30, 'white')
     return trg
     
-with open('result_pure_ocr.txt', 'w') as f:
+with open('result_pure_ocr_demo.txt', 'w') as f:
     count = 0
     for i in images:
         # Pillow solution
