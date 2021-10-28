@@ -83,7 +83,7 @@ num_to_char = layers.StringLookup(
 )
 
 
-def split_data(images, labels, train_size=0.9, shuffle=True):
+def split_data(images, labels, train_size=0.9, shuffle=False):
     # 1. Get the total size of the dataset
     size = len(images)
     # 2. Make an indices array and shuffle it, if required
@@ -116,7 +116,6 @@ def encode_single_sample(img_path, label):
     img = tf.transpose(img, perm=[1, 0, 2])
     # 6. Map the characters in label to numbers
     label = char_to_num(tf.strings.unicode_split(label, input_encoding="UTF-8"))
-    print(label)
     # 7. Return a dict as our model is expecting two inputs
     return {"image": img, "label": label}
 
@@ -297,17 +296,22 @@ def decode_batch_predictions(pred):
 
 
 #  Let's check results on some validation samples
-for batch in validation_dataset.take(1):
-    batch_images = batch["image"]
-    batch_labels = batch["label"]
+with open('result.txt', 'w') as f:
+    for batch in validation_dataset.take(1):
+        batch_images = batch["image"]
+        batch_labels = batch["label"]
 
-    preds = prediction_model.predict(batch_images)
-    pred_texts = decode_batch_predictions(preds)
+        preds = prediction_model.predict(batch_images)
+        pred_texts = decode_batch_predictions(preds)
 
-    orig_texts = []
-    for label in batch_labels:
-        label = tf.strings.reduce_join(num_to_char(label)).numpy().decode("utf-8")
-        orig_texts.append(label)
+        for i in pred_texts:
+            f.write("pred: %s\n" % i)
 
-    for i in range(len(pred_texts)):
-        print(orig_texts[i], pred_texts[i])
+        orig_texts = []
+        for label in batch_labels:
+            label = tf.strings.reduce_join(num_to_char(label)).numpy().decode("utf-8")
+            orig_texts.append(label)
+        for i in range(len(pred_texts)):
+            print(orig_texts[i], pred_texts[i])
+            f.write("%s\n" % (str(orig_texts[i]) + str(pred_texts[i])))
+
