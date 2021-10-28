@@ -288,5 +288,5 @@ with open('result_pure_dnn_demo.txt', 'w') as f:
             orig_texts.append(label)
         for i in range(len(pred_texts)):
             print(orig_texts[i], pred_texts[i])
-            f.write("%s\n" % (str(orig_texts[i]) + str(pred_texts[i])))
+            f.write("%s\n" % (str(orig_texts[i]) + " " + str(pred_texts[i])))
 
